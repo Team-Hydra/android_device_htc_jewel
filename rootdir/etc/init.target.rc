@@ -1,27 +1,48 @@
 on init
+    mkdir /mnt/shell/emulated 0700 shell shell
     mkdir /mnt/media_rw/sdcard0 0700 media_rw media_rw
     mkdir /mnt/media_rw/sdcard1 0700 media_rw media_rw
     mkdir /mnt/media_rw/usbdisk 0700 media_rw media_rw
 
+    mkdir /storage/emulated 0555 root root
     mkdir /storage/sdcard0 0700 root root
     mkdir /storage/sdcard1 0700 root root
     mkdir /storage/usbdisk 0700 root root
 
     # for backwards compatibility
-    symlink /storage/sdcard0 /mnt/sdcard
-    symlink /storage/sdcard0 /sdcard
     symlink /storage/sdcard1 /external_sd
     symlink /storage/sdcard1 /mnt/external_sd
+    symlink /storage/sdcard1 /sdcard2
     symlink /storage/usbdisk /usbdisk
     symlink /storage/usbdisk /mnt/usbdisk
 
-    export EXTERNAL_STORAGE /storage/sdcard0
     export SECONDARY_STORAGE /storage/sdcard1:/storage/usbdisk
+    export EXTERNAL_STORAGE2 /storage/sdcard1
+    export EXTERNAL_STORAGE3 /storage/sdcard1
+    export EXTERNAL_STORAGE4 /storage/usbdisk
+    export EXTERNAL_STORAGE5 /storage/usbdisk
+
+on early-fs
+    # System must be mounted in order to use mksh and setup the fstabs
+    mount ext4 emmc@system /system wait rw noatime
+
+    chown root.root /setfstab
+    chmod 700 /setfstab
+    exec /system/bin/sh -c /setfstab
 
 on fs
+    # we may remap this as /mnt/sdcard0 with the sdcard fuse tool
+    mkdir /data/media 0770 media_rw media_rw
+    chown media_rw media_rw /data/media
+    setprop ro.crypto.fuse_sdcard true
+
     # for NFC
     symlink /system/vendor/pittpatt /vendor/pittpatt
     symlink /system/vendor/firmware/libpn544_fw.so /vendor/firmware/libpn544_fw.so
+
+on early-boot
+    # Set the storage properties now that the property service is available
+    start set_props
 
 # Services start here
 
@@ -30,12 +51,21 @@ service akmd /system/bin/akmd
     user compass
     group compass misc input
 
-service setup_fs /system/bin/setup_fs mmcblk0p36
+# Run setup_fs in case the cache partition needs formatted
+service setup_fs sh -c "/system/bin/setup_fs $(cat /proc/emmc | grep '"cache"' | awk '-F:' '{ print $1; }')"
     class core
     user root
     group root
     oneshot
 
+# create virtual SD card at /mnt/sdcard, based on the /data/media directory with new storage layout
+# daemon will drop to user/group system/media_rw after initializing
+# underlying files in /data/media will be created with user and group media_rw (1023)
+service sdcard /system/bin/sdcard -u 1023 -g 1023 -l /data/media /mnt/shell/emulated
+    class late_start
+    disabled
+
+# Enabled by vold if using the old fstab
 service fuse_sdcard0 /system/bin/sdcard -u 1023 -g 1023 -d /mnt/media_rw/sdcard0 /storage/sdcard0
     class late_start
     disabled
@@ -47,3 +77,29 @@ service fuse_sdcard1 /system/bin/sdcard -u 1023 -g 1023 -d /mnt/media_rw/sdcard1
 service fuse_usbdisk /system/bin/sdcard -u 1023 -g 1023 -d /mnt/media_rw/usbdisk /storage/usbdisk
     class late_start
     disabled
+
+# Set sys.storage_legacy if remount.qcom shows the system partition to be on p35 (old configuration)
+service set_props /system/bin/sh -c "setprop sys.storage_legacy $(cat /remount.qcom | grep -c p35)"
+    user root
+    group system
+    oneshot
+
+on property:sys.storage_legacy=0
+    export EXTERNAL_STORAGE /storage/emulated/legacy
+    export EMULATED_STORAGE_SOURCE /mnt/shell/emulated
+    export EMULATED_STORAGE_TARGET /storage/emulated
+    exec /system/bin/mount -o rw,remount /
+    symlink /mnt/shell/emulated/0 /mnt/sdcard
+    symlink /mnt/shell/emulated/0 /sdcard
+    exec /system/bin/mount -o ro,remount /
+    setprop persist.sys.usb.config mtp
+    start sdcard
+
+on property:sys.storage_legacy=1
+    export EXTERNAL_STORAGE /storage/sdcard0
+    exec /system/bin/mount -o rw,remount /
+    symlink /storage/sdcard0 /mnt/sdcard
+    symlink /storage/sdcard0 /sdcard
+    exec /system/bin/mount -o ro,remount /
+    setprop persist.sys.usb.config mtp
+

@@ -1,0 +1,24 @@
+# Android fstab file.
+# The filesystem that contains the filesystem checker binary (typically /system) cannot
+# specify MF_CHECK, and must come before any filesystems that do specify MF_CHECK
+
+#<src>			                        <mnt_point>	<type>	<mnt_flags>						<fs_mgr_flags>
+#/dev/block/platform/msm_sdcc.1/by-name/dsps	/firmware_dsps	vfat	ro,shortname=lower					wait
+/dev/block/platform/msm_sdcc.1/by-name/radio	/firmware_radio	vfat	ro,shortname=lower					wait
+/dev/block/platform/msm_sdcc.1/by-name/adsp	/firmware_q6	vfat	ro,shortname=lower					wait
+#/dev/block/platform/msm_sdcc.1/by-name/wcnss	/firmware_wcnss	vfat	ro,shortname=lower					wait
+
+/dev/block/platform/msm_sdcc.1/by-name/boot	/boot		emmc	defaults						defaults
+/dev/block/platform/msm_sdcc.1/by-name/recovery	/recovery	emmc	defaults						defaults
+/dev/block/platform/msm_sdcc.1/by-name/misc	/misc		emmc	defaults						defaults
+/dev/block/platform/msm_sdcc.1/by-name/devlog	/devlog		ext4	noatime,nosuid,nodev,barrier=0				wait
+#/dev/block/platform/msm_sdcc.1/by-name/system	/system		ext4	ro,noatime,barrier=0					wait
+/dev/block/platform/msm_sdcc.1/by-name/cache	/cache		ext4	noatime,nosuid,nodev,barrier=0				wait
+/dev/block/platform/msm_sdcc.1/by-name/userdata	/data		ext4	noatime,nosuid,nodev,noauto_da_alloc,barrier=0		wait,encryptable=/dev/block/platform/msm_sdcc.1/by-name/extra
+
+# SD card
+/devices/platform/msm_sdcc.1/mmc_host/mmc0	auto		auto	defaults						voldmanaged=sdcard0:38,noemulatedsd
+/devices/platform/msm_sdcc.3/mmc_host/mmc1	auto		auto	defaults						voldmanaged=sdcard1:auto
+
+# USB storage
+/devices/platform/msm_hsusb_host/usb		auto		auto	defaults						voldmanaged=usbdisk:auto

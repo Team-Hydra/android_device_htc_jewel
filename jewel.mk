@@ -22,9 +22,15 @@ $(call inherit-product, device/htc/s4-common/s4.mk)
 DEVICE_PACKAGE_OVERLAYS += device/htc/jewel/overlay
 
 # Boot ramdisk setup
+TARGET_SETS_FSTAB := true
+
 PRODUCT_PACKAGES += \
-    fstab.qcom \
-    init.target.rc
+    fstab-new.qcom \
+    fstab-old.qcom \
+    remount-new.qcom \
+    remount-old.qcom \
+    init.target.rc \
+    setfstab
 
 # Sound configs
 PRODUCT_COPY_FILES += \
