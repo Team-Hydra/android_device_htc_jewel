@@ -27,6 +27,11 @@
 # inherit from S4 common
 -include device/htc/s4-common/BoardConfigCommon.mk
 
+# Require bootloader version
+ifeq ($(TARGET_DEVICE),jeweldm)
+TARGET_BOARD_INFO_FILE ?= device/htc/jewel/board-info-jeweldm.txt
+endif
+
 # Bootloader
 TARGET_BOOTLOADER_BOARD_NAME := jewel
 
@@ -39,8 +44,12 @@ BOARD_BLUETOOTH_BDROID_BUILDCFG_INCLUDE_DIR := device/htc/jewel/bluetooth
 # RIL
 BOARD_PROVIDES_LIBRIL := true
 
+ifneq ($(TARGET_DEVICE),jeweldm)
 # USB
 TARGET_USE_CUSTOM_LUN_FILE_PATH := /sys/devices/platform/msm_hsusb/gadget/lun%d/file
+endif
+
+# HBOOT > 2.10.0000
 
 #dev:        size     erasesize name
 #mmcblk0p23: 000ffa00 00000200 "misc"
@@ -64,16 +73,55 @@ TARGET_USE_CUSTOM_LUN_FILE_PATH := /sys/devices/platform/msm_hsusb/gadget/lun%d/
 #mmcblk0p32: 00040000 00000200 "skylink"
 #mmcblk0p33: 00040000 00000200 "cdma_record"
 
+# HBOOT >= 2.10.0000
+
+#dev:        size     erasesize name
+#mmcblk0p23: 000ffa00 00000200 "misc"
+#mmcblk0p22: 00fffe00 00000200 "recovery"
+#mmcblk0p21: 01000000 00000200 "boot"
+#mmcblk0p36: 88000000 00000200 "system"
+#mmcblk0p30: 00140200 00000200 "local"
+#mmcblk0p37: 0dfffc00 00000200 "cache"
+#mmcblk0p38: 2f0000000 00000200 "userdata"
+#mmcblk0p26: 01400000 00000200 "devlog"
+#mmcblk0p28: 00040000 00000200 "pdata"
+#mmcblk0p34: 01900000 00000200 "carrier"
+#mmcblk0p39: 05dffc00 00000200 "fat"
+#mmcblk0p31: 00010000 00000200 "extra"
+#mmcblk0p35: 047e9800 00000200 "reserve"
+#mmcblk0p17: 02d00000 00000200 "radio"
+#mmcblk0p18: 00a00000 00000200 "adsp"
+#mmcblk0p16: 00100000 00000200 "dsps"
+#mmcblk0p19: 00500000 00000200 "wcnss"
+#mmcblk0p20: 007ffa00 00000200 "radio_config"
+#mmcblk0p24: 00400000 00000200 "modem_st1"
+#mmcblk0p25: 00400000 00000200 "modem_st2"
+#mmcblk0p32: 00040000 00000200 "skylink"
+#mmcblk0p33: 00040000 00000200 "cdma_record"
+
 # Filesystem
 TARGET_USERIMAGES_USE_EXT4 := true
 BOARD_BOOTIMAGE_PARTITION_SIZE := 16777216
 BOARD_RECOVERYIMAGE_PARTITION_SIZE := 16776704
+ifeq ($(TARGET_DEVICE),jeweldm)
+BOARD_SYSTEMIMAGE_PARTITION_SIZE := 2281701376
+BOARD_USERDATAIMAGE_PARTITION_SIZE := 12616466432
+else
 BOARD_SYSTEMIMAGE_PARTITION_SIZE := 1744829440
 BOARD_USERDATAIMAGE_PARTITION_SIZE := 2550136320
+endif
 BOARD_FLASH_BLOCK_SIZE := 131072
 
 # Vold
+ifeq ($(TARGET_DEVICE),jeweldm)
+BOARD_VOLD_MAX_PARTITIONS := 39
+else
 BOARD_VOLD_MAX_PARTITIONS := 38
+endif
 
 # Recovery
-TARGET_RECOVERY_FSTAB := device/htc/jewel/rootdir/etc/fstab.qcom
+ifeq ($(TARGET_DEVICE),jeweldm)
+TARGET_RECOVERY_FSTAB := device/htc/jewel/rootdir/etc/fstab.qcom.jeweldm
+else
+TARGET_RECOVERY_FSTAB := device/htc/jewel/rootdir/etc/fstab.qcom.jewel
+endif

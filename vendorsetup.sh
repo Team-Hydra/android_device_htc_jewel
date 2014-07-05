@@ -1,1 +1,2 @@
 add_lunch_combo cm_jewel-userdebug
+add_lunch_combo cm_jeweldm-userdebug
