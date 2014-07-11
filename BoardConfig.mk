@@ -125,3 +125,4 @@ TARGET_RECOVERY_FSTAB := device/htc/jewel/rootdir/etc/fstab.qcom.jeweldm
 else
 TARGET_RECOVERY_FSTAB := device/htc/jewel/rootdir/etc/fstab.qcom.jewel
 endif
+BOARD_USE_CUSTOM_RECOVERY_FONT := \"roboto_15x24.h\"
