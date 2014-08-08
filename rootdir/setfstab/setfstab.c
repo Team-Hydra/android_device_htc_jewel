@@ -126,12 +126,12 @@ int main(int argc, const char **argv) {
 
     if (LEGACY) {
         cp("/fstab-old.qcom", "/fstab.qcom");
-        cp("/remount-old.qcom", "/remount.qcom");
+//        cp("/remount-old.qcom", "/remount.qcom");
 //        ln("/storage/sdcard0", "/mnt/sdcard");
 //        ln("/storage/sdcard0", "/sdcard");
     } else {
         cp("/fstab-new.qcom", "/fstab.qcom");
-        cp("/remount-new.qcom", "/remount.qcom");
+//        cp("/remount-new.qcom", "/remount.qcom");
 //        ln("/storage/emulated/legacy", "/mnt/sdcard");
 //        ln("/storage/emulated/legacy", "/sdcard");
     }

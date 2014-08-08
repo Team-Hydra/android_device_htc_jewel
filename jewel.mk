@@ -27,8 +27,6 @@ TARGET_SETS_FSTAB := true
 PRODUCT_PACKAGES += \
     fstab-new.qcom \
     fstab-old.qcom \
-    remount-new.qcom \
-    remount-old.qcom \
     init.target.rc \
     setfstab
 

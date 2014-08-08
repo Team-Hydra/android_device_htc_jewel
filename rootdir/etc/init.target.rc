@@ -23,10 +23,7 @@ on init
     export EXTERNAL_STORAGE5 /storage/usbdisk
 
 on early-fs
-    # System must be mounted in order to use mksh and setup the fstabs
-    mount ext4 emmc@system /system wait rw noatime
-
-    chown root.root /setfstab
+    chown root root /setfstab
     chmod 700 /setfstab
     exec /system/bin/sh -c /setfstab
 
